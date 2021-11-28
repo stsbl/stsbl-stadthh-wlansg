@@ -3,9 +3,9 @@ Section: misc
 Priority: optional
 Maintainer: Stadtteilschule Blankenese <repository@stsbl.de>
 Build-Depends: debhelper-compat (= 13),
-  debhelper-sequence-iserv,
-  debhelper-sequence-iserv-winst,
-  debhelper-sequence-stsbl,
+  dh-sequence-iserv,
+  dh-sequence-iserv-winst,
+  dh-sequence-stsbl,
 Standards-Version: 4.5.1
 
 Package: winst-stsbl-stadthh-wlansg
