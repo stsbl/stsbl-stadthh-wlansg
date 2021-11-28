@@ -1,7 +1,7 @@
 Source: winst-stsbl-stadthh-wlansg
 Section: misc
 Priority: optional
-Maintainer: IServ <info@iserv.eu>
+Maintainer: Stadtteilschule Blankenese <repository@stsbl.de>
 Build-Depends: debhelper-compat (= 13),
   debhelper-sequence-iserv,
   debhelper-sequence-iserv-winst,
