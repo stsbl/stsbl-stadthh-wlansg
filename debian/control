@@ -14,7 +14,6 @@ Architecture: all
 Xb-Private-Iserv-Revision: ${iserv:Revision}
 Depends: ${iserv:winst:Depends},
   stsbl-iserv-stadthh-wlansg,
-# For inventory number call
   stsbl-iserv-collect-wlan-mac,
 Description: ${iserv:winst:Description}
 Tag: suite::iserv:deploy, role::package
