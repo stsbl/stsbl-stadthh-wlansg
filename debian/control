@@ -1,0 +1,19 @@
+Source: winst-stsbl-stadthh-wlansg
+Section: misc
+Priority: optional
+Maintainer: IServ <info@iserv.eu>
+Build-Depends: debhelper-compat (= 13),
+  debhelper-sequence-iserv,
+  debhelper-sequence-iserv-winst,
+  debhelper-sequence-stsbl,
+Standards-Version: 4.5.1
+
+Package: winst-stsbl-stadthh-wlansg
+Architecture: all
+Xb-Private-Iserv-Revision: ${iserv:Revision}
+Depends: ${iserv:winst:Depends},
+  stsbl-iserv-stadthh-wlansg,
+# For inventory number call
+  stsbl-iserv-collect-wlan-mac,
+Description: ${iserv:winst:Description}
+Tag: suite::iserv:deploy, role::package

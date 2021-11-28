@@ -1,0 +1,3 @@
+MkDir 0755 root:root /srv/appdata/stsbl-stadthh-wlansg
+MkDir 2570 pcpatch:admins /srv/appdata/stsbl-stadthh-wlansg/certificates
+

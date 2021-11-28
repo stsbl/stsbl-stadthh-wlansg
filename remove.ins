@@ -1,0 +1,65 @@
+[Initial]
+Message=WLAN-SG wird entfernt...
+; configuration variables
+DefVar $CertificateId$
+DefVar $SSID$
+DefVar $ExitCode$
+DefStringList $Result$
+
+[Actions]
+ShowBitmap "%ScriptPath%\logo.png" "WLAN-SG entfernen"
+Sub_GetVars
+Sub_ValidateConfig
+Sub_Remove
+
+[Sub_GetVars]
+Set $Result$ = GetReturnListFromSection("opsiservicecall_GetCertificateId")
+Set $CertificateId$ = TakeString("0", $Result$)
+
+if $CertificateId$ = ""
+  Set $Result$ = GetReturnListFromSection("opsiservicecall_GetInventoryNumber")
+  Set $CertificateId$ = TakeString("0", $Result$)
+endif
+
+comment "Certifcate ID is: " + $CertificateId$
+
+[Sub_ValidateConfig]
+Set $SSID$ = "WLAN-SG"
+; sanity checks
+if $CertificateId$ = ""
+  LogError "Fatal: missing certificate/inventory number."
+  IsFatalError
+endif
+
+[Sub_Remove]
+if CompareDotSeparatedNumbers(GetMSVersionInfo, ">=", "6.1")
+  ; Windows 7
+  DosInAnIcon_netsh
+  Sub_HandleExitCode
+  PowershellCall("Get-ChildItem Cert:\LocalMachine\My |Where-Object { $_.Subject -match '$CertificateId$' } |Remove-Item")
+else
+  LogError "Unsupported OS!"
+  IsFatalError
+endif
+
+[DosInAnIcon_netsh]
+netsh wlan delete profile name="$SSID$"
+
+[Sub_HandleExitCode]
+; check return code
+Set $ExitCode$ = GetLastExitCode
+comment "GetLastExitCode: " + $ExitCode$
+if not($ExitCode$ = "0")
+  LogError "Fatal: setup returned exit code " + $ExitCode$
+  IsFatalError
+endif
+
+[opsiservicecall_GetCertificateId]
+"method":"host_config_getValue"
+"params":[
+  "stadthh_wlansg_certificate_id"
+]
+
+[opsiservicecall_GetInventoryNumber]
+"method":"collect_wlan_mac_inventoryNumber"
+"params":[]

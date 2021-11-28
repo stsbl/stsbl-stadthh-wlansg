@@ -1,0 +1,128 @@
+[Initial]
+Message=WLAN-SG wird konfiguriert...
+DefVar $CertificateId$
+DefVar $CurrentLogLevel$
+DefVar $ExitCode$
+DefVar $IServHostname$
+DefVar $Password$
+DefStringList $Result$
+
+
+; This script generates an XML WLAN profile according to the specification:
+; http://msdn.microsoft.com/en-us/library/windows/desktop/ms706965(v=vs.85).aspx
+;
+; Windows XP:
+; No longer supported!
+;
+; Windows 7/8/10:
+; Windows 7/8/10 can read the XML file natively with netsh wlan.
+
+[Actions]
+ShowBitmap "%ScriptPath%\logo.png" "WLAN-SG einrichten"
+Sub_GetVars
+Sub_ValidateConfig
+Files_Copy
+WinBatch_SetACL
+Winbatch_ImportCert /RunElevated
+Sub_Setup
+Files_Cleanup
+
+[Sub_ValidateConfig]
+Set $CurrentLogLevel$ = GetLoglevel
+SetLogLevel=4
+Set $Result$ = GetReturnListFromSection("opsiservicecall_GetCertificatePassword")
+Set $Password$ = TakeString("0", $Result$)
+SetConfidential $Password$
+SetLogLevel=$CurrentLogLevel$
+
+;sanity checks
+if $CertificateId$ = ""
+  LogError "Fatal: no Certificate ID found. Aborting."
+  IsFatalError
+endif
+if $Password$ = ""
+  LogError "Fatal: no certificate password given! Aborting."
+  IsFatalError
+endif
+
+[Sub_GetVars]
+Set $Result$ = GetReturnListFromSection("opsiservicecall_GetCertificateId")
+Set $CertificateId$ = TakeString("0", $Result$)
+
+if $CertificateId$ = ""
+  Set $Result$ = GetReturnListFromSection("opsiservicecall_GetInventoryNumber")
+  Set $CertificateId$ = TakeString("0", $Result$)
+endif
+
+Set $IServHostname$ = Lower(Trim(TakeString(0, GetReturnListFromSection("opsiservicecall_GetHostname"))))
+
+comment "Certifcate ID is: " + $CertificateId$
+
+[Files_Copy]
+copy "\\$IServHostname$\appdata\%installingProdName%\certificates\$CertificateId$.pfx"  "%SystemDrive%\tmp"
+copy "%ScriptPath%\wlan-profile.xml" "%SystemDrive%\tmp"
+
+[WinBatch_SetACL]
+; If this script fails, we don't want to leave a world-readable profile behind.
+;
+; remove inherited ACEs:
+;   -actn setprot -op "dacl:p_nc;sacl:p_nc"
+; add ACE for SYSTEM
+;   -actn ace -ace "n:S-1-5-18;p:full"
+; add ACE for Administrators:
+;   -ace "n:S-1-5-32-544;p:full"
+"%ScriptPath%\SetACL.exe" -on "%SystemDrive%\tmp\wlan-profile.xml" -ot file -actn setprot -op "dacl:p_nc;sacl:p_nc" -actn ace -ace "n:S-1-5-18;p:full" -ace "n:S-1-5-32-544;p:full"
+"%ScriptPath%\SetACL.exe" -on "%SystemDrive%\tmp\$CertificateId$.pfx" -ot file -actn setprot -op "dacl:p_nc;sacl:p_nc" -actn ace -ace "n:S-1-5-18;p:full" -ace "n:S-1-5-32-544;p:full"
+
+
+[Winbatch_ImportCert]
+%System%\certutil.exe -p $Password$ -importpfx "%SystemDrive%\tmp\$CertificateId$.pfx"
+
+[Sub_Setup]
+if CompareDotSeparatedNumbers(GetMsVersionInfo, ">=", "6.1")
+  ; Windows 7/8.1/10
+  DosInAnIcon_netsh
+  Sub_HandleExitCode
+else
+  LogError "Unsupported OS!"
+  IsFatalError
+endif
+
+
+[DosInAnIcon_netsh]
+netsh wlan add profile filename="%SystemDrive%\tmp\wlan-profile.xml" user=all
+
+[Sub_HandleExitCode]
+; check return code
+Set $ExitCode$ = GetLastExitCode
+comment "GetLastExitCode: " + $ExitCode$
+if not($ExitCode$ = "0")
+  LogError "Fatal: setup returned exit code " + $ExitCode$
+  IsFatalError
+endif
+
+[Files_Cleanup]
+delete "%SystemDrive%\tmp\$CertificateId$.pfx"
+delete "%SystemDrive%\tmp\wlan-profile.xml"
+
+[opsiservicecall_GetInventoryNumber]
+"method":"collect_wlan_mac_inventoryNumber"
+"params":[]
+
+[opsiservicecall_GetCertificateId]
+"method":"host_config_getValue"
+"params":[
+  "stadthh_wlansg_certificate_id"
+]
+
+[opsiservicecall_GetCertificatePassword]
+"method":"host_config_getValue"
+"params":[
+  "stadthh_wlansg_certificate_password"
+]
+
+[opsiservicecall_GetHostname]
+"method":"iserv_cfg"
+"params":[
+  "Hostname"
+]

@@ -1,0 +1,10 @@
+[Product]
+type: localboot
+id: stsbl-stadthh-wlansg
+name: Konfiguration von WLAN-SG (Stadt Hamburg)
+description: Konfiguriert den Zugang zu WLAN-SG mit RADIUS-Zertifikat.
+advice: Das zu verwendende RADIUS-Zertifikat und dessen Passwort werden pro Gerät in der Geräteverwaltung konfiguriert (Mehrfachbearbeitung möglich). Das Zertifikat muss unter \\iserv\appdata\stsbl-stadthh-wlansg\certificates\%ID%.pfx abgelegt. Die zu verwendene %ID% wird in der Geräteverwaltung konfiguriert. Sollte keine ID vorhanden sein, wird die Inventarnummer verwendet, sofern vorhanden.
+version: 1.0
+packageVersion: 1.0
+setupScript: install.ins
+uninstallScript: remove.ins
