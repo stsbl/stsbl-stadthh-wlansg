@@ -1,3 +1,10 @@
+winst-stsbl-stadthh-wlansg (2.0-1.0) stable; urgency=medium
+
+  * Remove previous certificates using School number as CN
+    Thanks to Jonas Lührig for the patch.
+
+ -- Felix Jacobi <Felix@jacobi-hamburg.net>  Sat, 30 Sep 2023 21:11:42 +0200
+
 winst-stsbl-stadthh-wlansg (1.0-1.0) stable; urgency=medium
 
   * Initial release
