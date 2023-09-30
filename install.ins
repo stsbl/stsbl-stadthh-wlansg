@@ -5,6 +5,7 @@ DefVar $CurrentLogLevel$
 DefVar $ExitCode$
 DefVar $IServHostname$
 DefVar $Password$
+DefVar $SchoolNumber$
 DefStringList $Result$
 
 
@@ -21,6 +22,7 @@ DefStringList $Result$
 ShowBitmap "%ScriptPath%\logo.png" "WLAN-SG einrichten"
 Sub_GetVars
 Sub_ValidateConfig
+Sub_RemovePreviousCerts
 Files_Copy
 WinBatch_SetACL
 Winbatch_ImportCert /RunElevated
@@ -55,8 +57,13 @@ if $CertificateId$ = ""
 endif
 
 Set $IServHostname$ = Lower(Trim(TakeString(0, GetReturnListFromSection("opsiservicecall_GetHostname"))))
+Set $SchoolNumber$  = TakeString(0, PowershellCall("([regex]'^(\d+)').Matches('" + $CertificateId$ + "').Value"))
 
 comment "Certifcate ID is: " + $CertificateId$
+comment "School number is: " + $SchoolNumber$
+
+[Sub_RemovePreviousCerts]
+PowershellCall("Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match '" + $SchoolNumber$ + "' } | Remove-Item")
 
 [Files_Copy]
 copy "\\$IServHostname$\appdata\%installingProdName%\certificates\$CertificateId$.pfx"  "%SystemDrive%\tmp"
