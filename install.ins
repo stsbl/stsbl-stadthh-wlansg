@@ -90,6 +90,8 @@ if CompareDotSeparatedNumbers(GetMsVersionInfo, ">=", "6.1")
   ; Windows 7/8.1/10
   DosInAnIcon_netsh
   Sub_HandleExitCode
+  DosInAnIcon_connect
+  ; No handle exit code as connect may fail if device is not in reach of AP
 else
   LogError "Unsupported OS!"
   IsFatalError
@@ -98,6 +100,16 @@ endif
 
 [DosInAnIcon_netsh]
 netsh wlan add profile filename="%SystemDrive%\tmp\wlan-profile.xml" user=all
+
+[DosInAnIcon_connect]
+netsh wlan connect name=WLAN-SG
+set loopinc=0
+:pingloop
+set /a loopinc=%loopinc%+1
+if "%loopinc%"=="15" goto pingloopend
+timeout 1 >NUL
+ping -n 1 $IServHostname$ | find "TTL=" || goto :pingloop
+:pingloopend
 
 [Sub_HandleExitCode]
 ; check return code
