@@ -1,3 +1,10 @@
+winst-stsbl-stadthh-wlansg (2.0-1.1) testing; urgency=medium
+
+  * Added reconnecting to WLAN
+    Thanks to Jonas Lührig.
+
+ -- Felix Jacobi <Felix@jacobi-hamburg.net>  Sun, 21 Jul 2024 13:20:10 +0200
+
 winst-stsbl-stadthh-wlansg (2.0-1.0) stable; urgency=medium
 
   * Remove previous certificates using School number as CN
